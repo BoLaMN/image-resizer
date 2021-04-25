@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Resizer Test Page</title>
+
+  <style>
+    body {
+      font-family: 'Open Sans', Helvetica;
+    }
+    h1 {
+      border-bottom: 1px solid #bbb;
+    }
+    h1 pre {
+      display: inline;
+    }
+    h2 {
+      clear: both;
+    }
+    .sample-img {
+      float: left;
+      margin: 10px;
+    }
+  </style>
+
+</head>
+<body>
+
+  <h1><pre>image-resizer</pre> test page</h1>
+
+  <h2>Square</h2>
+  <div class="sample-img">
+    <img src="/local/test/sample_images/image1.jpg?s=200">
+    <p>s=200</p>
+  </div>
+  <div class="sample-img">
+    <img src="/local/test/sample_images/image1.jpg?s=200&g=ne">
+    <p>s=200&g=ne</p>
+  </div>
+  <div class="sample-img">
+    <img src="/local/test/sample_images/image1.jpg?s=200&g=sw">
+    <p>s=200&g=sw</p>
+  </div>
+
+  <h2>Crop</h2>
+
+  <div class="sample-img">
+    <img src="/local/test/sample_images/image2.jpg?w=200&c=fit">
+    <p>w=200&c=fit</p>
+  </div>
+
+  <div class="sample-img">
+    <img src="/local/test/sample_images/image2.jpg?w=200&h=200&c=pad">
+    <p>w=200&h=200&c=pad</p>
+  </div>
+
+  <div class="sample-img">
+    <img src="/local/test/sample_images/image2.jpg?w=200&c=fill">
+    <p>w=200&c=fill</p>
+  </div>
+
+  <div class="sample-img">
+    <img src="local/test/sample_images/image2.jpg?w=200&c=cut&g=ne">
+    <p>w=200&c=cut&g=ne</p>
+  </div>
+
+  <h2>Non-Square Crop Fill</h2>
+
+  <div class="sample-img">
+    <img src="/local/test/sample_images/image1.jpg?w=200&h=150&c=fill">
+    <p>w=200&h=150&c=fill</p>
+  </div>
+
+  <div class="sample-img">
+    <img src="/local/test/sample_images/image1.jpg?w=150&h=200&c=fill">
+    <p>w=150&h=200&c=fill</p>
+  </div>
+
+  <h2>Height</h2>
+
+  <div class="sample-img">
+    <img src="/local/test/sample_images/image3.png?h=100">
+    <p>h=100</p>
+  </div>
+
+  <div class="sample-img">
+    <img src="/local/test/sample_images/image3.png?h=200">
+    <p>h=200</p>
+  </div>
+
+  <h2>Width</h2>
+
+  <div class="sample-img">
+    <img src="/local/test/sample_images/image3.png?w=100">
+    <p>w=100</p>
+  </div>
+
+  <div class="sample-img">
+    <img src="/local/test/sample_images/image3.png?w=200">
+    <p>w=200</p>
+  </div>
+
+
+ <h2>External Sources</h2>
+
+  <!--<div class="sample-img">
+    <img src="/s3/bucket/missnine.jpg?s=100">
+    <p>s=100</p>
+  </div>-->
+
+  <div class="sample-img">
+    <img src="/external/https://upload.wikimedia.org/wikipedia/commons/f/f6/Louis_Armstrong.jpg?s=100">
+    <p>s=100</p>
+  </div>
+
+  <h2>Filters</h2>
+
+  <div class="sample-img">
+    <img src="/local/test/sample_images/image3.png?w=200&f=greyscale">
+    <p>w=200&f=greyscale</p>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,246 @@
+{
+	"Description": "Image Server with Lambda v2.0",
+	"Parameters": {
+		"NodeLambdaBucket" : {
+			"Type" : "String",
+			"Description" : "The S3 Bucket containing the Lambda code ZIP",
+			"Default" : "bolamn",
+			"MinLength" : 1
+		},
+		"NodeLambdaPath" : {
+			"Type" : "String",
+			"Description" : "The path to the Lambda code ZIP",
+			"Default" : "lambda.zip"
+		},
+		"SSLACMCertificateARN" : {
+			"Type" : "String",
+			"Description" : "SSL ACM Certificate ARN."
+		},
+		"Domains" : {
+			"Type" : "CommaDelimitedList",
+			"Description" : "Domain Name(s)"
+		},
+		"UploadsS3Bucket" : {
+			"Type" : "String",
+			"Description" : "The S3 Bucket to resize images from."
+		}
+	},
+	"Resources" : {
+		"ApiGatewayRestApi": {
+			"Type": "AWS::ApiGateway::RestApi",
+			"Properties": {
+				"Name" : "ImageResizer"
+			}
+		},
+		"ApiGatewayMethod": {
+			"Type": "AWS::ApiGateway::Method",
+			"Properties": {
+				"RestApiId": {"Ref":"ApiGatewayRestApi"},
+				"ResourceId": {"Ref":"ApiGatewayResourcePath"},
+				"HttpMethod": "GET",
+				"AuthorizationType": "NONE",
+				"Integration": {
+					"Type": "AWS_PROXY",
+					"IntegrationHttpMethod": "POST",
+					"Uri": { "Fn::Sub":"arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"}
+				}
+			}
+		},
+		"ApiGatewayResource": {
+			"Type": "AWS::ApiGateway::Resource",
+			"Properties": {
+				"RestApiId": { "Ref":"ApiGatewayRestApi" },
+				"ParentId": { "Fn::GetAtt" : [
+					"ApiGatewayRestApi",
+					"RootResourceId"
+				]},
+				"PathPart": "{source}"
+			}
+		},
+		"ApiGatewayResourcePath": {
+			"Type": "AWS::ApiGateway::Resource",
+			"Properties": {
+				"RestApiId": { "Ref":"ApiGatewayRestApi" },
+				"ParentId": { "Ref": "ApiGatewayResource" },
+				"PathPart": "{path+}"
+			}
+		},
+		"ApiGatewayDeployment": {
+			"Type": "AWS::ApiGateway::Deployment",
+			"Properties": {
+				"RestApiId": { "Ref": "ApiGatewayRestApi" },
+				"Description": "Production",
+				"StageName": "Prod"
+			},
+			"DependsOn":"ApiGatewayMethod"
+		},
+		"LambdaInvokePermission": {
+			"Type": "AWS::Lambda::Permission",
+			"Properties": {
+				"FunctionName" : { "Fn::GetAtt" : ["LambdaFunction", "Arn"] },
+				"Action": "lambda:InvokeFunction",
+				"Principal": "apigateway.amazonaws.com",
+				"SourceArn": {
+					"Fn::Join": [
+						"",
+						[
+							"arn:aws:execute-api:",
+							{"Ref": "AWS::Region"},
+							":",
+							{"Ref": "AWS::AccountId"},
+							":",
+							{"Ref": "ApiGatewayRestApi"},
+							"/*"
+						]
+					]
+				}
+			}
+		},
+		"LambdaFunctionIAMRole" : {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Sid": "",
+							"Effect": "Allow",
+							"Principal": {
+								"Service": "lambda.amazonaws.com"
+							},
+							"Action": "sts:AssumeRole"
+						}
+					]
+				},
+				"Path": "/",
+				"Policies": [ {
+					"PolicyName": "LambdaFunctionIAMRole",
+					"PolicyDocument" : {
+						"Version": "2012-10-17",
+						"Statement": [
+							{
+								"Effect": "Allow",
+								"Action": [
+									"s3:GetObject",
+									"s3:PutObject",
+									"s3:CopyObject"
+								],
+								"Resource": [
+									"arn:aws:s3:::*"
+								]
+							},
+							{
+								"Effect": "Allow",
+								"Action": [
+									"logs:CreateLogGroup",
+									"logs:CreateLogStream",
+									"logs:PutLogEvents",
+									"logs:DescribeLogStreams"
+								],
+								"Resource": [
+									"arn:aws:logs:*:*:*"
+								]
+							}
+						]
+					}
+				} ]
+			}
+		},
+		"LambdaFunction": {
+			"Type": "AWS::Lambda::Function",
+			"Properties": {
+				"Handler": "index.handler",
+				"Role": { "Fn::GetAtt" : [ "LambdaFunctionIAMRole", "Arn"] },
+				"Code": {
+					"S3Bucket": { "Ref" : "NodeLambdaBucket" },
+					"S3Key": { "Ref" : "NodeLambdaPath" }
+				},
+				"Runtime": "nodejs14.x",
+				"Timeout": "60",
+				"MemorySize": 256,
+				"Handler": "index.handler",
+				"Environment" : {
+					"Variables" : {
+						"S3_BUCKET" : { "Ref": "UploadsS3Bucket" },
+						"S3_REGION": {"Ref": "AWS::Region"}
+					}
+				}
+			}
+		},
+		"CloudFrontDistribution" : {
+			"Type" : "AWS::CloudFront::Distribution",
+			"Properties" : {
+				"DistributionConfig" : {
+					"Aliases": { "Ref" : "Domains" },
+					"DefaultCacheBehavior": {
+						"AllowedMethods" : [ "HEAD", "GET" ],
+						"CachedMethods" : [ "HEAD", "GET" ],
+						"ForwardedValues" : {
+							"Cookies" : {
+								"Forward" : "none"
+							},
+							"Headers" : [],
+							"QueryString" : "true"
+						},
+						"MinTTL" : "63115200",
+						"DefaultTTL":"63115200",
+						"MaxTTL":"63115200",
+						"TargetOriginId" : { "Ref" : "AWS::StackName" },
+						"ViewerProtocolPolicy" : "allow-all"
+					},
+					"Enabled" : true,
+					"Origins" : [
+						{
+							"CustomOriginConfig" : {
+								"OriginProtocolPolicy" : "https-only"
+							},
+							"DomainName" : { "Fn::Sub":"${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com"},
+							"OriginPath" : "/Prod",
+							"Id" : { "Ref" : "AWS::StackName" },
+							"OriginCustomHeaders" : [
+								{
+									"HeaderName" : "Accept",
+									"HeaderValue" : "image/*"
+								}
+							],
+							"Id" : { "Ref" : "AWS::StackName" }
+						}
+					],
+					"CustomErrorResponses": [
+						{
+							"ErrorCachingMinTTL" : 10,
+							"ErrorCode" : 400
+						},
+						{
+							"ErrorCachingMinTTL" : 300,
+							"ErrorCode" : 404
+						},
+						{
+							"ErrorCachingMinTTL" : 10,
+							"ErrorCode" : 500
+						},
+						{
+							"ErrorCachingMinTTL" : 10,
+							"ErrorCode" : 501
+						},
+						{
+							"ErrorCachingMinTTL" : 10,
+							"ErrorCode" : 502
+						},
+						{
+							"ErrorCachingMinTTL" : 10,
+							"ErrorCode" : 503
+						},
+						{
+							"ErrorCachingMinTTL" : 10,
+							"ErrorCode" : 504
+						}
+					],
+					"HttpVersion" : "http2"
+				}
+			}
+		}
+	},
+	"Outputs": {
+	}
+}
