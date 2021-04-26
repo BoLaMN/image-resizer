@@ -1,5 +1,7 @@
 'use strict';
-var config, configNames;
+var config, configNames, path;
+
+path = require('path');
 
 config = {
   AUTO_ORIENT: true,
@@ -15,11 +17,13 @@ config = {
   IMAGE_PROGRESSIVE: true,
   IMAGE_QUALITY: 100,
   JSON_EXPIRY: 60 * 60 * 24 * 30,
-  LOCAL_FILE_PATH: path.resolve(process.cwd(), '..'),
+  LOCAL_FILE_PATH: path.resolve(process.cwd()),
   NAMED_MODIFIERS_ONLY: false,
   NODE_ENV: 'development',
   REMOVE_METADATA: true,
-  RESIZE_PROCESS_ORIGINAL: true
+  RESIZE_PROCESS_ORIGINAL: true,
+  HOSTNAME: '0.0.0.0',
+  PORT: 3000
 };
 
 configNames = Object.keys(config);

@@ -1,5 +1,5 @@
 'use sctrict';
-var App, Router, connect, http, methods, querystring, routes, url,
+var App, Router, config, connect, http, methods, querystring, routes, url,
   slice = [].slice;
 
 connect = require('connect');
@@ -14,19 +14,15 @@ url = require('url');
 
 Router = require('./router').Router;
 
+config = require('./config');
+
 routes = require('./routes');
 
 App = (function() {
-  function App(hostname, port) {
-    if (hostname == null) {
-      hostname = '0.0.0.0';
-    }
-    if (port == null) {
-      port = 3000;
-    }
+  function App() {
     this.config = {
-      hostname: hostname,
-      port: port
+      hostname: config.HOSTNAME,
+      port: config.PORT
     };
     this.routes = [];
     methods.forEach((function(_this) {

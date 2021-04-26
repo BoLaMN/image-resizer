@@ -8,7 +8,7 @@ config = require '../config'
 limitDimension = (dimension, mods) ->
   maxDimension = parseInt(config.MAX_IMAGE_DIMENSION, 10)
 
-  if dimension of mods and mods[dimension] > 0
+  if mods[dimension]? and mods[dimension] > 0
     mods[dimension] = Math.min(maxDimension, mods[dimension])
   else
     mods[dimension] = maxDimension
@@ -30,12 +30,7 @@ parseModifiers = (query) ->
     if not value? and modifier.default
       val = modifier.default
     else if value? and typeof fn is 'function'
-      value = coerce value
-
-      if values and values.indexOf(value) > -1
-        value = value.toLowerCase()
-
-      val = fn value
+      val = fn coerce value
     else return
 
     if typeof val is 'object'
@@ -57,21 +52,13 @@ module.exports = (query) ->
 
   if mods.action is 'json'
     return mods
-
-  if mods.action is 'square'
+  else if mods.action is 'square'
     mods.crop = 'fill'
     return mods
-
-  if mods.height isnt null or mods.width isnt null
+  else if mods.height isnt null or mods.width isnt null
     mods.action = 'resize'
 
-    if mods.crop != c.default
+    if mods.crop isnt c.default or mods.gravity isnt g.default or mods.x or mods.y
       mods.action = 'crop'
 
-    if mods.gravity != g.default
-      mods.action = 'crop'
-
-    if mods.x or mods.y
-      mods.action = 'crop'
-
-    mods
+  mods

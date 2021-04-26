@@ -20,16 +20,14 @@ module.exports = (contents, callback) ->
             .resize resize
             .extract crop
         when 'cut'
-          grav = gravity @modifiers, metadata.width, metadata.height, width, height
-
-          contents.extract grav
+          contents.extract gravity @modifiers, metadata, width, height
         when 'scale'
           contents.resize { width, height }
         when 'pad'
           contents
             .resize {
               width, height
-              background: config.IMAGE_PADDING_COLOR or 'white'
+              background: config.IMAGE_PADDING_COLOR
               fit: 'contain'
               position: 0
             }

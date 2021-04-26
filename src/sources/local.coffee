@@ -2,10 +2,11 @@
 
 { LOCAL_FILE_PATH } = require '../config'
 { createReadStream } = require 'fs'
-{ join } = require 'path'
+
+path = require 'path'
 
 module.exports = ({ params }, callback) ->
-  file = join LOCAL_FILE_PATH, params.path
+  file = path.join LOCAL_FILE_PATH, params.path
 
   handle = (stream) ->
     callback null, stream

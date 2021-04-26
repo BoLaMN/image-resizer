@@ -1,6 +1,6 @@
 'use strict'
 
-gravity = ({ gravity }, width, height, cropWidth, cropHeight) ->
+gravity = ({ gravity }, { width, height }, cropWidth, cropHeight) ->
   cropWidth = cropWidth or cropHeight
   cropHeight = cropHeight or cropWidth
 
@@ -40,8 +40,8 @@ gravity = ({ gravity }, width, height, cropWidth, cropHeight) ->
   height: cropHeight
   width: cropWidth
 
-xy = (modifiers, width, height, cropWidth, cropHeight) ->
-  dims = gravity modifiers, width, height, cropWidth, cropHeight
+xy = (modifiers, { width, height }, cropWidth, cropHeight) ->
+  dims = gravity modifiers, { width, height }, cropWidth, cropHeight
 
   if modifiers.x
     x = modifiers.x
@@ -83,22 +83,14 @@ exports.cropFill = (modifiers, size) ->
     else
       cropHeight = size.height
 
-  wd = newWd = cropWidth
-  ht = newHt = Math.round(newWd * size.height / size.width)
+  width = cropWidth
+  height = Math.round(width * size.height / size.width)
 
-  if newHt < cropHeight
-    ht = newHt = cropHeight
-    wd = newWd = Math.round(newHt * size.width / size.height)
+  if height < cropHeight
+    height = cropHeight
+    width = Math.round(height * size.width / size.height)
 
-  crop = xy(modifiers, newWd, newHt, cropWidth, cropHeight)
+  resize = { width, height, top: 0, left: 0 }
+  crop = xy modifiers, resize, cropWidth, cropHeight
 
-  resize:
-    width: wd
-    height: ht
-    top: 0
-    left: 0
-  crop:
-    width: cropWidth
-    height: cropHeight
-    left: crop.left
-    top: crop.top
+  { resize, crop }

@@ -1,9 +1,10 @@
 'use strict';
 var gravity, xy;
 
-gravity = function(arg, width, height, cropWidth, cropHeight) {
-  var gravity, x, y;
+gravity = function(arg, arg1, cropWidth, cropHeight) {
+  var gravity, height, width, x, y;
   gravity = arg.gravity;
+  width = arg1.width, height = arg1.height;
   cropWidth = cropWidth || cropHeight;
   cropHeight = cropHeight || cropWidth;
   x = width / 2 - (cropWidth / 2);
@@ -51,9 +52,13 @@ gravity = function(arg, width, height, cropWidth, cropHeight) {
   };
 };
 
-xy = function(modifiers, width, height, cropWidth, cropHeight) {
-  var dims, x, y;
-  dims = gravity(modifiers, width, height, cropWidth, cropHeight);
+xy = function(modifiers, arg, cropWidth, cropHeight) {
+  var dims, height, width, x, y;
+  width = arg.width, height = arg.height;
+  dims = gravity(modifiers, {
+    width: width,
+    height: height
+  }, cropWidth, cropHeight);
   if (modifiers.x) {
     x = modifiers.x;
     if (x <= width - cropWidth) {
@@ -78,7 +83,7 @@ exports.gravity = gravity;
 exports.xy = xy;
 
 exports.cropFill = function(modifiers, size) {
-  var crop, cropHeight, cropWidth, ht, newHt, newWd, wd;
+  var crop, cropHeight, cropWidth, height, resize, width;
   modifiers.width = modifiers.width || modifiers.height;
   modifiers.height = modifiers.height || modifiers.width;
   if (modifiers.width > size.width) {
@@ -96,25 +101,21 @@ exports.cropFill = function(modifiers, size) {
       cropHeight = size.height;
     }
   }
-  wd = newWd = cropWidth;
-  ht = newHt = Math.round(newWd * size.height / size.width);
-  if (newHt < cropHeight) {
-    ht = newHt = cropHeight;
-    wd = newWd = Math.round(newHt * size.width / size.height);
+  width = cropWidth;
+  height = Math.round(width * size.height / size.width);
+  if (height < cropHeight) {
+    height = cropHeight;
+    width = Math.round(height * size.width / size.height);
   }
-  crop = xy(modifiers, newWd, newHt, cropWidth, cropHeight);
+  resize = {
+    width: width,
+    height: height,
+    top: 0,
+    left: 0
+  };
+  crop = xy(modifiers, resize, cropWidth, cropHeight);
   return {
-    resize: {
-      width: wd,
-      height: ht,
-      top: 0,
-      left: 0
-    },
-    crop: {
-      width: cropWidth,
-      height: cropHeight,
-      left: crop.left,
-      top: crop.top
-    }
+    resize: resize,
+    crop: crop
   };
 };

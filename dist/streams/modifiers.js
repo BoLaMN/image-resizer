@@ -12,11 +12,11 @@ integer = function(v) {
 };
 
 alphanumeric = function(v) {
-  return v.replace(/[^a-z0-9]/i, '');
+  return v.replace(/[^a-z0-9]/i, '').toLowerCase();
 };
 
 alpha = function(v) {
-  return v.replace(/[^a-z]/i, '');
+  return v.replace(/[^a-z]/i, '').toLowerCase();
 };
 
 module.exports = {

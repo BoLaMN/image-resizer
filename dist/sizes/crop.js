@@ -10,7 +10,7 @@ module.exports = function(contents, callback) {
   ref1 = this.modifiers, height = ref1.height, width = ref1.width;
   contents.metadata().then((function(_this) {
     return function(metadata) {
-      var crop, grav, ref2, resize;
+      var crop, ref2, resize;
       switch (_this.modifiers.crop) {
         case 'fit':
           contents.resize({
@@ -24,8 +24,7 @@ module.exports = function(contents, callback) {
           contents.resize(resize).extract(crop);
           break;
         case 'cut':
-          grav = gravity(_this.modifiers, metadata.width, metadata.height, width, height);
-          contents.extract(grav);
+          contents.extract(gravity(_this.modifiers, metadata, width, height));
           break;
         case 'scale':
           contents.resize({
@@ -37,7 +36,7 @@ module.exports = function(contents, callback) {
           contents.resize({
             width: width,
             height: height,
-            background: config.IMAGE_PADDING_COLOR || 'white',
+            background: config.IMAGE_PADDING_COLOR,
             fit: 'contain',
             position: 0
           });

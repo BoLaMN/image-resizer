@@ -11,7 +11,7 @@ config = require('../config');
 limitDimension = function(dimension, mods) {
   var maxDimension;
   maxDimension = parseInt(config.MAX_IMAGE_DIMENSION, 10);
-  if (dimension in mods && mods[dimension] > 0) {
+  if ((mods[dimension] != null) && mods[dimension] > 0) {
     mods[dimension] = Math.min(maxDimension, mods[dimension]);
   } else {
     mods[dimension] = maxDimension;
@@ -34,11 +34,7 @@ parseModifiers = function(query) {
       if ((value == null) && modifier["default"]) {
         val = modifier["default"];
       } else if ((value != null) && typeof fn === 'function') {
-        value = coerce(value);
-        if (values && values.indexOf(value) > -1) {
-          value = value.toLowerCase();
-        }
-        val = fn(value);
+        val = fn(coerce(value));
       } else {
         return;
       }
@@ -68,22 +64,14 @@ module.exports = function(query) {
   mods = parseModifiers(query);
   if (mods.action === 'json') {
     return mods;
-  }
-  if (mods.action === 'square') {
+  } else if (mods.action === 'square') {
     mods.crop = 'fill';
     return mods;
-  }
-  if (mods.height !== null || mods.width !== null) {
+  } else if (mods.height !== null || mods.width !== null) {
     mods.action = 'resize';
-    if (mods.crop !== c["default"]) {
+    if (mods.crop !== c["default"] || mods.gravity !== g["default"] || mods.x || mods.y) {
       mods.action = 'crop';
     }
-    if (mods.gravity !== g["default"]) {
-      mods.action = 'crop';
-    }
-    if (mods.x || mods.y) {
-      mods.action = 'crop';
-    }
-    return mods;
   }
+  return mods;
 };
