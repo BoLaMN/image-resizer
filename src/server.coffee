@@ -9,11 +9,12 @@ url = require 'url'
 
 { Router } = require './router'
 
+config = require './config'
 routes = require './routes'
 
 class App
-  constructor: (hostname = '0.0.0.0', port = 3000) ->
-    @config = { hostname, port }
+  constructor: ->
+    @config = { hostname: config.HOSTNAME, port: config.PORT }
     @routes = []
 
     methods.forEach (method) =>
