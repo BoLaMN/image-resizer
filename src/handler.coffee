@@ -40,7 +40,7 @@ module.exports = (image, stream, done) ->
     if not checkImageType buffer, image.format
       stream.destroy()
 
-      return done new Error 'file does not match the input type given'
+      return done new Error "file does not match the input type #{ image.format } given"
 
      if image.modifiers.action is 'json'
       return contents.metadata done

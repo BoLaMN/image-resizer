@@ -22,11 +22,12 @@ Image = (function() {
   function Image(arg, response) {
     this.params = arg.params, this.query = arg.query;
     this.process = bind(this.process, this);
-    this.modifiers = parseQueryString(this.query);
     this.resp = new Response(response);
     this.expiry = config.IMAGE_EXPIRY;
-    this.format = path.extname(this.params.path);
     this.source = this.params.source;
+    this.modifiers = parseQueryString(this.params);
+    this.format = path.extname(this.params.url.pathname);
+    this.output = path.extname(this.params.output);
     this.validate();
   }
 

@@ -1,5 +1,5 @@
 'use strict';
-var config, keys, limitDimension, modifiers, parseModifiers,
+var config, keys, limitDimension, matchWithGroups, modifiers, parseModifiers, regex,
   hasProp = {}.hasOwnProperty;
 
 modifiers = require('./modifiers');
@@ -8,10 +8,24 @@ keys = require('../keys');
 
 config = require('../config');
 
+regex = /((?!=`growshrink`)[<>])?((?!=`h`)\d+)?x((?!=`w`)\d+)?((?!=`g`)[ctblrs])?((?!=`c`)[f])?/;
+
+matchWithGroups = function(string) {
+  var i, matches;
+  matches = string.match(regex);
+  i = regex.toString().match(/`(.+?)`/g);
+  return i.map(function(group) {
+    return group.match(/`(.+)`/)[1];
+  }).reduce((function(acc, curr, index, arr) {
+    acc[curr] = matches[index + 1];
+    return acc;
+  }), {});
+};
+
 limitDimension = function(dimension, mods) {
   var maxDimension;
   maxDimension = parseInt(config.MAX_IMAGE_DIMENSION, 10);
-  if ((mods[dimension] != null) && mods[dimension] > 0) {
+  if (dimension in mods && mods[dimension] > 0) {
     mods[dimension] = Math.min(maxDimension, mods[dimension]);
   } else {
     mods[dimension] = maxDimension;
@@ -22,9 +36,11 @@ limitDimension = function(dimension, mods) {
   return null;
 };
 
-parseModifiers = function(query) {
-  var mods;
-  mods = {};
+parseModifiers = function(params) {
+  var mods, query, url;
+  mods = matchWithGroups(params.modifiers);
+  url = new URL('http://localhost/' + params.output);
+  query = Object.fromEntries(url.searchParams);
   keys('modifiers').forEach((function(_this) {
     return function(key) {
       var coerce, desc, fn, modifier, results, val, value, values;
@@ -34,7 +50,11 @@ parseModifiers = function(query) {
       if ((value == null) && modifier["default"]) {
         val = modifier["default"];
       } else if ((value != null) && typeof fn === 'function') {
-        val = fn(coerce(value));
+        value = coerce(value);
+        if (values && values.indexOf(value) > -1) {
+          value = value.toLowerCase();
+        }
+        val = fn(value);
       } else {
         return;
       }
@@ -58,20 +78,28 @@ parseModifiers = function(query) {
   return mods;
 };
 
-module.exports = function(query) {
+module.exports = function(params) {
   var c, g, mods, q;
   g = modifiers.g, c = modifiers.c, q = modifiers.q;
-  mods = parseModifiers(query);
+  mods = parseModifiers(params);
   if (mods.action === 'json') {
     return mods;
-  } else if (mods.action === 'square') {
+  }
+  if (mods.action === 'square') {
     mods.crop = 'fill';
     return mods;
-  } else if (mods.height !== null || mods.width !== null) {
+  }
+  if (mods.height !== null || mods.width !== null) {
     mods.action = 'resize';
-    if (mods.crop !== c["default"] || mods.gravity !== g["default"] || mods.x || mods.y) {
+    if (mods.crop !== c["default"]) {
       mods.action = 'crop';
     }
+    if (mods.gravity !== g["default"]) {
+      mods.action = 'crop';
+    }
+    if (mods.x || mods.y) {
+      mods.action = 'crop';
+    }
+    return mods;
   }
-  return mods;
 };

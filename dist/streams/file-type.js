@@ -41,10 +41,12 @@ exports.checkImageType = function(buffer, format) {
   var headers, offset;
   headers = bytes[format];
   offset = offsets[format] || 0;
+  console.log("format: " + format + ", bytes: " + headers);
   if (!headers) {
     return false;
   }
   return headers.every(function(header, idx) {
+    console.log("header: " + header + ", idx: " + idx + ", buffer: " + buffer[idx + offset]);
     return header === buffer[idx + offset];
   });
 };

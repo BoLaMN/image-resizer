@@ -33,7 +33,7 @@ module.exports = function(image, stream, done) {
   return stream.once('data', function(buffer) {
     if (!checkImageType(buffer, image.format)) {
       stream.destroy();
-      return done(new Error('file does not match the input type given'));
+      return done(new Error("file does not match the input type " + image.format + " given"));
     }
     if (image.modifiers.action === 'json') {
       return contents.metadata(done);

@@ -10,10 +10,15 @@ exports.Request = (function(superClass) {
   extend(Request, superClass);
 
   function Request(event) {
+    var url;
     Request.__super__.constructor.apply(this, arguments);
     this.method = event.httpMethod || 'GET';
     this.query = event.queryStringParameters || {};
     this.params = event.pathParameters || {};
+    if (this.params.path != null) {
+      url = decodeURIComponent(this.params.path);
+      this.params.url = new URL(url);
+    }
     this.headers = event.headers || {};
     this.path = event.path || '/';
     console.log('new request', this.query, this.headers, this.params, this.path, this.method);

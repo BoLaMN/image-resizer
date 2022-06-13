@@ -10,10 +10,10 @@ integer = (v) ->
   parseInt(('' + v).replace /[^0-9]/, '') * 1
 
 alphanumeric = (v) ->
-  v.replace(/[^a-z0-9]/i, '').toLowerCase()
+  v.replace /[^a-z0-9]/i, ''
 
 alpha = (v) ->
-  v.replace(/[^a-z]/i, '').toLowerCase()
+  v.replace /[^a-z]/i, ''
 
 module.exports =
   h:

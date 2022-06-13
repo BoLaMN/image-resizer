@@ -42,7 +42,7 @@
 				"Integration": {
 					"Type": "AWS_PROXY",
 					"IntegrationHttpMethod": "POST",
-					"Uri": { "Fn::Sub":"arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"}
+					"Uri": { "Fn::Sub":"arn:aws:apigateway:ap-southeast-2:lambda:path/2015-03-31/functions/${LambdaFunction.Arn}/invocations"}
 				}
 			}
 		},
@@ -54,7 +54,7 @@
 					"ApiGatewayRestApi",
 					"RootResourceId"
 				]},
-				"PathPart": "{source}/{path+}"
+				"PathPart": "{proxy+}"
 			}
 		},
 		"ApiGatewayDeployment": {
@@ -186,7 +186,7 @@
 							"CustomOriginConfig" : {
 								"OriginProtocolPolicy" : "https-only"
 							},
-							"DomainName" : { "Fn::Sub":"${ApiGatewayRestApi}.execute-api.${AWS::Region}.amazonaws.com"},
+							"DomainName" : { "Fn::Sub":"${ApiGatewayRestApi}.execute-api.ap-southeast-2.amazonaws.com"},
 							"OriginPath" : "/Prod",
 							"Id" : { "Ref" : "AWS::StackName" },
 							"OriginCustomHeaders" : [

@@ -14,13 +14,15 @@ keys    = require './keys'
 
 class Image
   constructor: ({ @params, @query }, response) ->
-    @modifiers = parseQueryString @query
     @resp = new Response response
 
     @expiry = config.IMAGE_EXPIRY
 
-    @format = path.extname @params.path
     @source = @params.source
+    @modifiers = parseQueryString @params
+
+    @format = path.extname @params.url.pathname
+    @output = path.extname @params.output
 
     @validate()
 

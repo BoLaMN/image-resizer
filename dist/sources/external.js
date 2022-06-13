@@ -8,14 +8,9 @@ https = require('https');
 keys = require('../keys');
 
 module.exports = function(arg, callback) {
-  var handle, params, path, protocol, query, qury;
+  var handle, params, path, protocol, query;
   params = arg.params, query = arg.query;
-  qury = Object.keys(query).filter(function(key) {
-    return keys('modifiers').indexOf(key) === -1;
-  }).map(function(key) {
-    return key + '=' + query[key];
-  });
-  path = params.path + "?" + qury.join("&");
+  path = params.url.href;
   handle = function(stream) {
     return callback(null, stream);
   };
@@ -24,5 +19,6 @@ module.exports = function(arg, callback) {
   } else {
     protocol = http;
   }
+  console.log("url: " + path);
   protocol.get(path, handle);
 };

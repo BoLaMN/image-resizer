@@ -7,11 +7,7 @@ keys = require '../keys'
 
 module.exports = ({ params, query }, callback) ->
 
-  qury = Object.keys query
-    .filter (key) -> keys('modifiers').indexOf(key) is -1
-    .map (key) -> key + '=' + query[key]
-
-  path = params.path + "?" + qury.join "&"
+  path = params.url.href
 
   handle = (stream) ->
     callback null, stream
@@ -20,6 +16,8 @@ module.exports = ({ params, query }, callback) ->
     protocol = https
   else
     protocol = http
+
+  console.log "url: #{ path }"
 
   protocol.get path, handle
 

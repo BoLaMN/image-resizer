@@ -8,6 +8,12 @@ class exports.Request extends Readable
     @method = event.httpMethod or 'GET'
     @query = event.queryStringParameters or {}
     @params = event.pathParameters or {}
+
+    if @params.path?
+      url = decodeURIComponent @params.path
+
+      @params.url = new URL url
+
     @headers = event.headers or {}
     @path = event.path or '/'
 

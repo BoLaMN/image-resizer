@@ -5,10 +5,31 @@ keys = require '../keys'
 
 config = require '../config'
 
-limitDimension = (dimension, mods) ->
-  maxDimension = parseInt(config.MAX_IMAGE_DIMENSION, 10)
+regex = ///
+  ((?!=`growshrink`)[<>])?
+  ((?!=`h`)\d+)?
+  x
+  ((?!=`w`)\d+)?
+  ((?!=`g`)[ctblrs])?
+  ((?!=`c`)[f])?
+///
 
-  if mods[dimension]? and mods[dimension] > 0
+matchWithGroups = (string) ->
+  matches = string.match regex
+
+  i = regex.toString().match(/`(.+?)`/g)
+
+  i.map((group) ->
+    group.match(/`(.+)`/)[1]
+  ).reduce ((acc, curr, index, arr) ->
+    acc[curr] = matches[index + 1]
+    acc
+  ), {}
+
+limitDimension = (dimension, mods) ->
+  maxDimension = parseInt config.MAX_IMAGE_DIMENSION, 10
+
+  if dimension of mods and mods[dimension] > 0
     mods[dimension] = Math.min(maxDimension, mods[dimension])
   else
     mods[dimension] = maxDimension
@@ -18,8 +39,11 @@ limitDimension = (dimension, mods) ->
 
   null
 
-parseModifiers = (query) ->
-  mods = {}
+parseModifiers = (params) ->
+  mods = matchWithGroups params.modifiers
+
+  url = new URL 'http://localhost/' + params.output
+  query = Object.fromEntries url.searchParams
 
   keys('modifiers').forEach (key) =>
     value = query[key]
@@ -30,7 +54,12 @@ parseModifiers = (query) ->
     if not value? and modifier.default
       val = modifier.default
     else if value? and typeof fn is 'function'
-      val = fn coerce value
+      value = coerce value
+
+      if values and values.indexOf(value) > -1
+        value = value.toLowerCase()
+
+      val = fn value
     else return
 
     if typeof val is 'object'
@@ -45,20 +74,28 @@ parseModifiers = (query) ->
 
   mods
 
-module.exports = (query) ->
+module.exports = (params) ->
   { g, c, q } = modifiers
 
-  mods = parseModifiers query
+  mods = parseModifiers params
 
   if mods.action is 'json'
     return mods
-  else if mods.action is 'square'
+
+  if mods.action is 'square'
     mods.crop = 'fill'
     return mods
-  else if mods.height isnt null or mods.width isnt null
+
+  if mods.height isnt null or mods.width isnt null
     mods.action = 'resize'
 
-    if mods.crop isnt c.default or mods.gravity isnt g.default or mods.x or mods.y
+    if mods.crop != c.default
       mods.action = 'crop'
 
-  mods
+    if mods.gravity != g.default
+      mods.action = 'crop'
+
+    if mods.x or mods.y
+      mods.action = 'crop'
+
+    mods

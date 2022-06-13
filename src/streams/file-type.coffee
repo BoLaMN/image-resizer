@@ -4,7 +4,7 @@ offsets =
 bytes =
   bmp:  [ 0x42, 0x4D ]
   gif:  [ 0x47, 0x49, 0x46 ]
-  jpeg:  [ 0xFF, 0xD8, 0xFF ]
+  jpeg: [ 0xFF, 0xD8, 0xFF ]
   jxr:  [ 0x49, 0x49, 0xBC ]
   pdf:  [ 0x25, 0x50, 0x44, 0x46 ]
   png:  [ 0x89, 0x50, 0x4E, 0x47
@@ -50,8 +50,12 @@ exports.checkImageType = (buffer, format) ->
   headers = bytes[format]
   offset = offsets[format] or 0
 
+  console.log "format: #{ format }, bytes: #{ headers }"
+
   if not headers
     return false
 
   headers.every (header, idx) ->
+    console.log "header: #{ header }, idx: #{ idx }, buffer: #{ buffer[idx + offset ]}"
+
     header is buffer[idx + offset]
